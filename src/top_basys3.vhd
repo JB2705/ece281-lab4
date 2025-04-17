@@ -25,7 +25,13 @@ end top_basys3;
 architecture top_basys3_arch of top_basys3 is
 
     -- signal declarations
-    
+    signal w_clk_2hz : std_logic;
+    signal w_clk_1khz : std_logic;
+    signal w_floor_0: STD_LOGIC_VECTOR (3 downto 0);
+    signal w_floor_2: STD_LOGIC_VECTOR (3 downto 0);
+    signal w_data: STD_LOGIC_VECTOR (3 downto 0);
+    --signal w_sel: STD_LOGIC_VECTOR (3 downto 0);
+    --signal w_seg_n: STD_LOGIC_VECTOR (6 downto 0);
   
 	-- component declarations
     component sevenseg_decoder is
@@ -70,12 +76,75 @@ architecture top_basys3_arch of top_basys3 is
 	
 begin
 	-- PORT MAPS ----------------------------------------
-    	
+    clk_div_2hz: clock_divider
+    --generic map ( k_DIV => INSERT VALUE )
+        port map(
+            i_clk => clk,
+            i_reset => btnL, --or btnU), --might have to make different. Also might have to make k_div the right value for both dividers
+            
+            o_clk => w_clk_2hz
+            --o_clk => led(15)
+        );
+    
+    clk_div_1khz: clock_divider
+        --generic map ( k_DIV => INSERT VALUE )
+        port map(
+            i_clk => clk,
+            i_reset => btnL, --or btnU), --might have to make different. Also might have to make k_div the right value for both dividers
+            
+            o_clk => w_clk_1khz
+        );
+    
+    elevator_fsm_0: elevator_controller_fsm
+        port map(
+            i_clk => w_clk_2hz,
+            i_reset => btnR, --OR btnU
+            go_up_down => sw(1),
+            is_stopped => sw(0),
+            
+            o_floor => w_floor_0 --may have to flip the assignment ?
+        );
+    
+    elevator_fsm_2: elevator_controller_fsm
+        port map(
+            i_clk => w_clk_2hz,
+            i_reset => btnR, --OR btnU
+            go_up_down => sw(15),
+            is_stopped => sw(14),
+           
+            o_floor => w_floor_2 --may have to flip the assignment ?
+        );
+     
+     TDM: TDM4
+        port map(
+            i_clk => w_clk_1khz,
+            i_reset => btnU,
+            i_D0 => w_floor_0,
+            i_D1 => "1111",--F
+            i_D2 => w_floor_2,
+            i_D3 => "1111",--F
+            
+            o_data => w_data,
+            --o_sel => w_sel
+            o_sel => an(3 downto 0)
+            
+        );
+        
+     sevensegDC: sevenseg_decoder
+        port map(
+            i_hex => w_data,
+            --o_seg_n => w_seg_n
+            o_seg_n => seg(6 downto 0)
+        ); 
+        
+        
+    
 	
 	-- CONCURRENT STATEMENTS ----------------------------
 	
 	-- LED 15 gets the FSM slow clock signal. The rest are grounded.
-	
+	led(15) <= w_clk_2hz;
+	led (14 downto 0) <= "0";
 	-- leave unused switches UNCONNECTED. Ignore any warnings this causes.
 	
 	-- reset signals
