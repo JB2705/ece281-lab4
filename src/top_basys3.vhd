@@ -77,7 +77,7 @@ architecture top_basys3_arch of top_basys3 is
 begin
 	-- PORT MAPS ----------------------------------------
     clk_div_2hz: clock_divider
-    --generic map ( k_DIV => INSERT VALUE )
+        generic map ( k_DIV => 25000000  ) --2hz clock from 100mhz, 100mhz/50mhz = 2 hz. 25 000 000 (25 million) since the value is doubled
         port map(
             i_clk => clk,
             i_reset => btnL, --or btnU), --might have to make different. Also might have to make k_div the right value for both dividers
@@ -87,7 +87,7 @@ begin
         );
     
     clk_div_1khz: clock_divider
-        --generic map ( k_DIV => INSERT VALUE )
+        generic map ( k_DIV => 50000  )--1khz clock from 100mhz, 100mhz/100 khz = 1 khz. 50 khz (50 000) since the value is doubled
         port map(
             i_clk => clk,
             i_reset => btnL, --or btnU), --might have to make different. Also might have to make k_div the right value for both dividers
@@ -144,7 +144,7 @@ begin
 	
 	-- LED 15 gets the FSM slow clock signal. The rest are grounded.
 	led(15) <= w_clk_2hz;
-	led (14 downto 0) <= "0";
+	led (14 downto 0) <= "000000000000000";
 	-- leave unused switches UNCONNECTED. Ignore any warnings this causes.
 	
 	-- reset signals
